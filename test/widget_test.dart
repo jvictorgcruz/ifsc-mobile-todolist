@@ -5,17 +5,16 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:flutter_application_1/main.dart';
 
 void main() {
-  testWidgets('Hello World appears in AppBar and body', (WidgetTester tester) async {
+  testWidgets('Task list screen appears', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp());
 
-    // Deve haver dois widgets com o texto 'Hello World': AppBar e corpo.
-    expect(find.text('Hello World'), findsNWidgets(2));
+    // Check if the task list message is present
+    expect(find.text('Minhas Tarefas'), findsOneWidget);
+    expect(find.text('Lista de Tarefas (Vazio)'), findsOneWidget);
   });
 }
