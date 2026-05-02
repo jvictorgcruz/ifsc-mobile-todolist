@@ -5,6 +5,7 @@ import '../models/task.dart';
 import '../providers/task_provider.dart';
 import '../components/custom_input.dart';
 import '../components/custom_button.dart';
+import '../components/custom_dropdown.dart';
 
 class TaskFormScreen extends StatefulWidget {
   const TaskFormScreen({super.key});
@@ -18,14 +19,22 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _categoryController = TextEditingController();
   
-  DateTime? _selectedDate;
+  String? _selectedCategory = 'Pessoal';
+  DateTime _selectedDate = DateTime.now();
   bool _isImportant = false;
   
   int? _editingId;
   bool _isDone = false;
   bool _isInit = true;
+
+  final List<String> _categories = [
+    'Trabalho',
+    'Estudo',
+    'Pessoal',
+    'Lazer',
+    'Outros',
+  ];
 
   @override
   void didChangeDependencies() {
@@ -36,7 +45,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         _editingId = taskArg.id;
         _titleController.text = taskArg.title;
         _descriptionController.text = taskArg.description;
-        _categoryController.text = taskArg.category;
+        _selectedCategory = _categories.contains(taskArg.category) 
+            ? taskArg.category 
+            : 'Outros';
         _selectedDate = taskArg.dueDate;
         _isImportant = taskArg.isImportant;
         _isDone = taskArg.isDone;
@@ -49,14 +60,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _categoryController.dispose();
     super.dispose();
   }
 
   Future<void> _selectDate(BuildContext context) async {
     final pickedDate = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
+      initialDate: _selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
@@ -70,20 +80,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
   void _submitForm() {
     if (!_formKey.currentState!.validate()) return;
-    
-    if (_selectedDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, selecione uma data prevista.')),
-      );
-      return;
-    }
 
     final task = Task(
       id: _editingId,
       title: _titleController.text,
       description: _descriptionController.text,
-      category: _categoryController.text,
-      dueDate: _selectedDate!,
+      category: _selectedCategory ?? 'Outros',
+      dueDate: _selectedDate,
       isImportant: _isImportant,
       isDone: _isDone,
     );
@@ -126,45 +129,36 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 ),
                 const SizedBox(height: 16),
                 CustomInput(
-                  label: 'Descrição',
+                  label: 'Descrição (Opcional)',
                   controller: _descriptionController,
                   icon: Icons.description,
                   maxLines: 3,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'A descrição é obrigatória.';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 16),
-                CustomInput(
+                CustomDropdown(
                   label: 'Categoria',
-                  controller: _categoryController,
+                  value: _selectedCategory,
+                  items: _categories,
                   icon: Icons.category,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'A categoria é obrigatória.';
-                    }
-                    return null;
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCategory = value;
+                    });
                   },
                 ),
                 const SizedBox(height: 24),
                 
-
                 Row(
                   children: [
                     Expanded(
                       child: Text(
-                        _selectedDate == null
-                            ? 'Nenhuma data selecionada'
-                            : 'Data Prevista: ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}',
+                        'Data Prevista: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
                         style: const TextStyle(fontSize: 16),
                       ),
                     ),
                     TextButton.icon(
                       icon: const Icon(Icons.calendar_today),
-                      label: const Text('Selecionar Data'),
+                      label: const Text('Alterar Data'),
                       onPressed: () => _selectDate(context),
                     ),
                   ],

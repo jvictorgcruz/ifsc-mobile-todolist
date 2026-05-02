@@ -25,24 +25,57 @@ class WelcomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             
+
             Consumer<TaskProvider>(
               builder: (ctx, taskProvider, child) {
                 final nextTask = taskProvider.nextTask;
                 if (nextTask == null) {
                   return const Text('Nenhuma tarefa pendente.');
                 }
-                return Column(
-                  children: [
-                    const Text('Sua próxima tarefa é:'),
-                    Text(
-                      nextTask.title,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                return Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: InkWell(
+                    onTap: () => Navigator.of(context).pushNamed(
+                      '/details',
+                      arguments: nextTask,
                     ),
-                    Text(
-                      'Para: ${DateFormat('dd/MM/yyyy').format(nextTask.dueDate)}',
-                      style: const TextStyle(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(15),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Sua próxima tarefa é:',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            nextTask.title,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                              const SizedBox(width: 8),
+                              Text(
+                                DateFormat('dd/MM/yyyy').format(nextTask.dueDate),
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 );
               },
             ),

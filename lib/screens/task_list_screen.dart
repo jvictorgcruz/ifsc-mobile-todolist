@@ -4,11 +4,29 @@ import '../providers/task_provider.dart';
 import '../components/task_tile.dart';
 import '../models/task.dart';
 
-class TaskListScreen extends StatelessWidget {
+class TaskListScreen extends StatefulWidget {
   const TaskListScreen({super.key});
 
   @override
+  State<TaskListScreen> createState() => _TaskListScreenState();
+}
+
+class _TaskListScreenState extends State<TaskListScreen> {
+  String _selectedCategoryFilter = 'Todas';
+  final List<String> _categories = [
+    'Todas',
+    'Trabalho',
+    'Estudo',
+    'Pessoal',
+    'Lazer',
+    'Outros',
+  ];
+
+  @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
     return DefaultTabController(
       length: 4,
       child: Scaffold(
@@ -24,28 +42,68 @@ class TaskListScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: Consumer<TaskProvider>(
-          builder: (context, taskProvider, child) {
-            final tasks = taskProvider.tasks;
+        body: Column(
+          children: [
 
-            if (tasks.isEmpty) {
-              return const Center(
-                child: Text('Nenhuma tarefa encontrada. Adicione uma!'),
-              );
-            }
+            Container(
+              height: 50,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _categories.length,
+                itemBuilder: (ctx, index) {
+                  final cat = _categories[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: ChoiceChip(
+                      label: Text(cat),
+                      selected: _selectedCategoryFilter == cat,
+                      onSelected: (selected) {
+                        setState(() {
+                          _selectedCategoryFilter = cat;
+                        });
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+            Expanded(
+              child: Consumer<TaskProvider>(
+                builder: (context, taskProvider, child) {
 
-            return TabBarView(
-              children: [
-                _buildTaskList(tasks, context),
-                _buildTaskList(tasks.where((t) => t.isImportant && !t.isDone).toList(), context),
-                _buildTaskList(tasks.where((t) => t.isDone).toList(), context),
-                _buildTaskList(
-                  tasks.where((t) => !t.isDone && t.dueDate.isBefore(DateTime.now())).toList(),
-                  context,
-                ),
-              ],
-            );
-          },
+                  final allTasks = taskProvider.tasks.where((t) {
+                    return _selectedCategoryFilter == 'Todas' || 
+                           t.category == _selectedCategoryFilter;
+                  }).toList();
+
+                  if (taskProvider.tasks.isEmpty) {
+                    return const Center(
+                      child: Text('Nenhuma tarefa encontrada.'),
+                    );
+                  }
+
+                  if (allTasks.isEmpty) {
+                    return const Center(
+                      child: Text('Nenhuma tarefa nesta categoria.'),
+                    );
+                  }
+
+                  return TabBarView(
+                    children: [
+                      _buildTaskList(allTasks, context),
+                      _buildTaskList(allTasks.where((t) => t.isImportant && !t.isDone).toList(), context),
+                      _buildTaskList(allTasks.where((t) => t.isDone).toList(), context),
+                      _buildTaskList(
+                        allTasks.where((t) => !t.isDone && t.dueDate.isBefore(today)).toList(),
+                        context,
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -60,7 +118,7 @@ class TaskListScreen extends StatelessWidget {
   Widget _buildTaskList(List<Task> tasks, BuildContext context) {
     if (tasks.isEmpty) {
       return const Center(
-        child: Text('Nenhuma tarefa nesta categoria.'),
+        child: Text('Nada por aqui!'),
       );
     }
 
@@ -74,7 +132,6 @@ class TaskListScreen extends StatelessWidget {
             Provider.of<TaskProvider>(context, listen: false).toggleDone(task);
           },
           onDelete: () {
-
             if (task.id != null) {
               Provider.of<TaskProvider>(context, listen: false).deleteTask(task.id!);
             }
