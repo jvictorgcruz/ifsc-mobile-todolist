@@ -95,7 +95,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
                       _buildTaskList(allTasks.where((t) => t.isImportant && !t.isDone).toList(), context),
                       _buildTaskList(allTasks.where((t) => t.isDone).toList(), context),
                       _buildTaskList(
-                        allTasks.where((t) => !t.isDone && t.dueDate.isBefore(today)).toList(),
+                        allTasks.where((t) {
+                          final taskDate = DateTime(t.dueDate.year, t.dueDate.month, t.dueDate.day + 1);
+                          return !t.isDone && taskDate.isBefore(today);
+                        }).toList(),
                         context,
                       ),
                     ],
