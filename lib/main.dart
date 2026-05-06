@@ -5,6 +5,7 @@ import 'screens/welcome_screen.dart';
 import 'screens/task_list_screen.dart';
 import 'screens/task_form_screen.dart';
 import 'screens/task_details_screen.dart';
+import 'utils/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,10 +21,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Todo List IFSC',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.lightTheme,
         home: const WelcomeScreen(),
         routes: {
           '/list': (ctx) => const TaskListScreen(),

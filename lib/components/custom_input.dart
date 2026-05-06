@@ -24,14 +24,16 @@ class CustomInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: theme.textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: theme.colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
@@ -41,28 +43,28 @@ class CustomInput extends StatelessWidget {
           obscureText: isPassword,
           keyboardType: keyboardType,
           maxLines: maxLines,
+          style: theme.textTheme.bodyLarge,
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: icon != null ? Icon(icon) : null,
             filled: true,
-            fillColor: Colors.grey[100],
+            fillColor: theme.colorScheme.surfaceContainerLow,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+              borderSide: BorderSide(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+              borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.red, width: 1),
+              borderSide: BorderSide(color: theme.colorScheme.error, width: 1),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
         ),
       ],

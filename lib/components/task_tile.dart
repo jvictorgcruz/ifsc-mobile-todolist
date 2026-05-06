@@ -18,55 +18,42 @@ class TaskTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    final theme = Theme.of(context);
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3)),
+      ),
       child: ListTile(
         onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         leading: IconButton(
           icon: Icon(
             task.isDone ? Icons.check_circle : Icons.radio_button_unchecked,
-            color: task.isDone ? Colors.green : Colors.blue,
-            size: 28,
+            color: task.isDone ? Colors.green : theme.colorScheme.primary,
           ),
           onPressed: onToggleDone,
         ),
         title: Text(
           task.title,
-          style: TextStyle(
+          style: theme.textTheme.bodyLarge?.copyWith(
             fontWeight: FontWeight.bold,
             decoration: task.isDone ? TextDecoration.lineThrough : null,
-            color: task.isDone ? Colors.grey : Colors.black87,
+            color: task.isDone ? theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5) : theme.colorScheme.onSurface,
           ),
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${DateFormat('dd/MM/yyyy').format(task.dueDate)} • ${task.category}',
-              style: const TextStyle(fontSize: 12),
-            ),
-            if (task.isImportant)
-              const Padding(
-                padding: EdgeInsets.only(top: 4.0),
-                child: Row(
-                  children: [
-                    Icon(Icons.priority_high, size: 14, color: Colors.red),
-                    SizedBox(width: 4),
-                    Text(
-                      'Importante',
-                      style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-          ],
+        subtitle: Text(
+          '${DateFormat('dd/MM/yyyy').format(task.dueDate)} • ${task.category}',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-          onPressed: onDelete,
-        ),
+        trailing: task.isImportant && !task.isDone
+            ? Icon(Icons.star, size: 20, color: theme.colorScheme.primary)
+            : null,
       ),
     );
   }

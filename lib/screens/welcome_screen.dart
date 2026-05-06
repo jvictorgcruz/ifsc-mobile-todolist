@@ -8,88 +8,129 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     Provider.of<TaskProvider>(context, listen: false).loadTasks();
 
     return Scaffold(
-      body: Container(
-        padding: const EdgeInsets.all(20),
-        width: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.check_circle_outline, size: 80, color: Colors.blue),
-            const SizedBox(height: 20),
-            const Text(
-              'Bem-vindo!',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 40),
-            
-
-            Consumer<TaskProvider>(
-              builder: (ctx, taskProvider, child) {
-                final nextTask = taskProvider.nextTask;
-                if (nextTask == null) {
-                  return const Text('Nenhuma tarefa pendente.');
-                }
-                return Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: InkWell(
-                    onTap: () => Navigator.of(context).pushNamed(
-                      '/details',
-                      arguments: nextTask,
-                    ),
-                    borderRadius: BorderRadius.circular(15),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        children: [
-                          const Text(
-                            'Sua próxima tarefa é:',
-                            style: TextStyle(color: Colors.grey),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Minhas Tarefas',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
                           ),
-                          const SizedBox(height: 10),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+              
+              Consumer<TaskProvider>(
+                builder: (ctx, taskProvider, child) {
+                  final nextTask = taskProvider.nextTask;
+                  
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Próxima tarefa',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        if (nextTask == null)
+                          Text(
+                            'Sem tarefas pendentes.',
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          )
+                        else ...[
                           Text(
                             nextTask.title,
-                            style: const TextStyle(
-                              fontSize: 20,
+                            style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: Colors.blue,
+                              color: theme.colorScheme.onSurface,
                             ),
                           ),
-                          const SizedBox(height: 5),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                              const SizedBox(width: 8),
-                              Text(
-                                DateFormat('dd/MM/yyyy').format(nextTask.dueDate),
-                                style: const TextStyle(color: Colors.grey),
-                              ),
-                            ],
+                          const SizedBox(height: 8),
+                          Text(
+                            'Prazo: ${DateFormat('dd/MM/yyyy').format(nextTask.dueDate)} • ${nextTask.category}',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton(
+                            onPressed: () => Navigator.of(context).pushNamed(
+                              '/details',
+                              arguments: nextTask,
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 48),
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                            ),
+                            child: const Text('Detalhes'),
                           ),
                         ],
-                      ),
+                      ],
                     ),
-                  ),
-                );
-              },
-            ),
-            
-            const SizedBox(height: 40),
-            ElevatedButton.icon(
-              onPressed: () => Navigator.of(context).pushNamed('/list'),
-              icon: const Icon(Icons.list),
-              label: const Text('Ver Minhas Tarefas'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  );
+                },
               ),
-            ),
-          ],
+              
+              const SizedBox(height: 48),
+              
+              OutlinedButton(
+                onPressed: () => Navigator.of(context).pushNamed('/list'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 56),
+                  side: BorderSide(color: theme.colorScheme.primary),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Ver lista completa'),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pushNamed('/form'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 56),
+                  elevation: 0,
+                ),
+                child: const Text('Nova Tarefa'),
+              ),
+            ],
+          ),
         ),
       ),
     );

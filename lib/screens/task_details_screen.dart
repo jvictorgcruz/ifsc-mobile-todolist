@@ -10,14 +10,11 @@ class TaskDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    final theme = Theme.of(context);
     final task = ModalRoute.of(context)?.settings.arguments as Task;
-
-
 
     return Consumer<TaskProvider>(
       builder: (ctx, taskProvider, child) {
-
         final currentTask = taskProvider.tasks.firstWhere(
           (t) => t.id == task.id,
           orElse: () => task,
@@ -25,103 +22,94 @@ class TaskDetailsScreen extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Detalhes da Tarefa'),
+            title: const Text('Detalhes'),
             actions: [
               IconButton(
-                icon: const Icon(Icons.edit),
+                icon: const Icon(Icons.edit_outlined),
                 onPressed: () {
                   Navigator.of(context).pushNamed('/form', arguments: currentTask);
                 },
               ),
             ],
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Icon(
                       currentTask.isDone ? Icons.check_circle : Icons.radio_button_unchecked,
-                      color: currentTask.isDone ? Colors.green : Colors.blue,
-                      size: 32,
+                      color: currentTask.isDone ? Colors.green : theme.colorScheme.primary,
+                      size: 28,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         currentTask.title,
-                        style: TextStyle(
-                          fontSize: 24,
+                        style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           decoration: currentTask.isDone ? TextDecoration.lineThrough : null,
-                          color: currentTask.isDone ? Colors.grey : Colors.black87,
+                          color: currentTask.isDone ? theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5) : theme.colorScheme.onSurface,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-
-
-                _buildDetailRow(Icons.tag, 'ID', currentTask.id.toString()),
-                _buildDetailRow(Icons.category, 'Categoria', currentTask.category),
-                _buildDetailRow(
-                  Icons.calendar_today,
-                  'Data Prevista',
-                  DateFormat('dd/MM/yyyy').format(currentTask.dueDate),
-                ),
+                const SizedBox(height: 32),
                 
+                _buildInfoRow(theme, 'Categoria', currentTask.category),
+                _buildInfoRow(theme, 'Data Prevista', DateFormat('dd/MM/yyyy').format(currentTask.dueDate)),
                 if (currentTask.isImportant)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 16.0),
-                    child: Row(
-                      children: [
-                        Icon(Icons.priority_high, color: Colors.red),
-                        SizedBox(width: 12),
-                        Text(
-                          'Tarefa Importante',
-                          style: TextStyle(fontSize: 16, color: Colors.red, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                const Divider(height: 32),
+                  _buildInfoRow(theme, 'Prioridade', 'Importante', isHigh: true),
                 
-
-                const Text(
-                  'Descrição:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                const SizedBox(height: 24),
+                const Divider(),
+                const SizedBox(height: 24),
+                
+                Text(
+                  'Descrição',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Text(
-                      currentTask.description,
-                      style: const TextStyle(fontSize: 16, height: 1.5),
-                    ),
+                const SizedBox(height: 12),
+                Text(
+                  currentTask.description.isEmpty ? 'Sem descrição.' : currentTask.description,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    height: 1.5,
                   ),
                 ),
                 
-                const SizedBox(height: 16),
-
-
+                const SizedBox(height: 48),
+                
                 if (!currentTask.isDone)
                   CustomButton(
                     label: 'Concluir Tarefa',
-                    icon: Icons.check,
-                    color: Colors.green,
                     onPressed: () {
                       Provider.of<TaskProvider>(context, listen: false).toggleDone(currentTask);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Tarefa concluída! 🎉')),
-                      );
                       Navigator.of(context).pop();
                     },
                   ),
+                
+                const SizedBox(height: 12),
+                
+                TextButton(
+                  onPressed: () {
+                    if (currentTask.id != null) {
+                      _showDeleteConfirmation(context, currentTask.id!);
+                    }
+                  },
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 48),
+                    foregroundColor: Colors.red,
+                  ),
+                  child: const Text('Excluir Tarefa'),
+                ),
               ],
             ),
           ),
@@ -130,22 +118,49 @@ class TaskDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(ThemeData theme, String label, String value, {bool isHigh = false}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(icon, color: Colors.grey[700]),
-          const SizedBox(width: 12),
           Text(
-            '$label: ',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 16),
+            label,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
             ),
+          ),
+          Text(
+            value,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: isHigh ? theme.colorScheme.error : theme.colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, int id) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Excluir'),
+        content: const Text('Deseja excluir esta tarefa?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              Provider.of<TaskProvider>(context, listen: false).deleteTask(id);
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pop();
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Excluir'),
           ),
         ],
       ),

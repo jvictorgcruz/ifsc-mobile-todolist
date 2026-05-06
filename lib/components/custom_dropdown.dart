@@ -4,9 +4,8 @@ class CustomDropdown extends StatelessWidget {
   final String label;
   final String? value;
   final List<String> items;
-  final void Function(String?) onChanged;
   final IconData? icon;
-  final String? Function(String?)? validator;
+  final void Function(String?) onChanged;
 
   const CustomDropdown({
     super.key,
@@ -15,50 +14,44 @@ class CustomDropdown extends StatelessWidget {
     required this.items,
     required this.onChanged,
     this.icon,
-    this.validator,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
+          style: theme.textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          initialValue: value,
-          onChanged: onChanged,
-          validator: validator,
-          decoration: InputDecoration(
-            prefixIcon: icon != null ? Icon(icon) : null,
-            filled: true,
-            fillColor: Colors.grey[100],
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(12),
           ),
-          items: items.map((String item) {
-            return DropdownMenuItem<String>(
-              value: item,
-              child: Text(item),
-            );
-          }).toList(),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              isExpanded: true,
+              icon: Icon(Icons.expand_more, color: theme.colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodyLarge,
+              items: items.map((String item) {
+                return DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(item),
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
         ),
       ],
     );

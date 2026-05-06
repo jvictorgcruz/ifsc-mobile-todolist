@@ -104,89 +104,113 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text(_editingId == null ? 'Nova Tarefa' : 'Editar Tarefa'),
+        title: Text(_editingId == null ? 'Nova Tarefa' : 'Editar'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                CustomInput(
-                  label: 'Título',
-                  controller: _titleController,
-                  icon: Icons.title,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'O título é obrigatório.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                CustomInput(
-                  label: 'Descrição (Opcional)',
-                  controller: _descriptionController,
-                  icon: Icons.description,
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 16),
-                CustomDropdown(
-                  label: 'Categoria',
-                  value: _selectedCategory,
-                  items: _categories,
-                  icon: Icons.category,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCategory = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 24),
-                
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Data Prevista: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CustomInput(
+                label: 'Título',
+                controller: _titleController,
+                hint: 'Nome da tarefa',
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Campo obrigatório';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+              CustomInput(
+                label: 'Descrição',
+                controller: _descriptionController,
+                hint: 'Opcional',
+                maxLines: 4,
+              ),
+              const SizedBox(height: 24),
+              
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: CustomDropdown(
+                      label: 'Categoria',
+                      value: _selectedCategory,
+                      items: _categories,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCategory = value;
+                        });
+                      },
                     ),
-                    TextButton.icon(
-                      icon: const Icon(Icons.calendar_today),
-                      label: const Text('Alterar Data'),
-                      onPressed: () => _selectDate(context),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Prazo',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        InkWell(
+                          onTap: () => _selectDate(context),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surfaceContainerLow,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                            ),
+                            child: Text(
+                              DateFormat('dd/MM/yyyy').format(_selectedDate),
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                
-
-                SwitchListTile(
-                  title: const Text('Tarefa Importante?'),
-                  subtitle: const Text('Tarefas importantes são destacadas.'),
-                  value: _isImportant,
-                  activeTrackColor: Colors.red[100],
-                  activeThumbColor: Colors.redAccent, 
-                  onChanged: (value) {
-                    setState(() {
-                      _isImportant = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 32),
-                
-                CustomButton(
-                  label: 'Salvar Tarefa',
-                  icon: Icons.save,
-                  onPressed: _submitForm,
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+              
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Marcar como importante',
+                    style: theme.textTheme.bodyLarge,
+                  ),
+                  Switch(
+                    value: _isImportant,
+                    onChanged: (value) {
+                      setState(() {
+                        _isImportant = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 48),
+              
+              CustomButton(
+                label: 'Salvar',
+                onPressed: _submitForm,
+              ),
+            ],
           ),
         ),
       ),
