@@ -13,6 +13,10 @@ class TaskListScreen extends StatefulWidget {
 
 class _TaskListScreenState extends State<TaskListScreen> {
   String _selectedCategoryFilter = 'Todas';
+  String _searchQuery = '';
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
+
   final List<String> _categories = [
     'Todas',
     'Trabalho',
@@ -21,6 +25,12 @@ class _TaskListScreenState extends State<TaskListScreen> {
     'Lazer',
     'Outros',
   ];
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +42,37 @@ class _TaskListScreenState extends State<TaskListScreen> {
       length: 4,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Tarefas'),
+          title: _isSearching
+              ? TextField(
+                  controller: _searchController,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    hintText: 'Pesquisar tarefas...',
+                    border: InputBorder.none,
+                    filled: false,
+                  ),
+                  style: theme.textTheme.bodyLarge,
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
+                )
+              : const Text('Tarefas'),
+          actions: [
+            IconButton(
+              icon: Icon(_isSearching ? Icons.close : Icons.search),
+              onPressed: () {
+                setState(() {
+                  _isSearching = !_isSearching;
+                  if (!_isSearching) {
+                    _searchQuery = '';
+                    _searchController.clear();
+                  }
+                });
+              },
+            ),
+          ],
           bottom: TabBar(
             isScrollable: true,
             tabAlignment: TabAlignment.start,
@@ -89,9 +129,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
             Expanded(
               child: Consumer<TaskProvider>(
                 builder: (context, taskProvider, child) {
-                  final allTasks = taskProvider.tasks.where((t) {
-                    return _selectedCategoryFilter == 'Todas' || 
-                           t.category == _selectedCategoryFilter;
+                  var filteredTasks = taskProvider.tasks.where((t) {
+                    final matchesCategory = _selectedCategoryFilter == 'Todas' || t.category == _selectedCategoryFilter;
+                    final matchesSearch = t.title.toLowerCase().contains(_searchQuery.toLowerCase());
+                    return matchesCategory && matchesSearch;
                   }).toList();
 
                   if (taskProvider.tasks.isEmpty) {
@@ -100,11 +141,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
                   return TabBarView(
                     children: [
-                      _buildTaskList(allTasks, context),
-                      _buildTaskList(allTasks.where((t) => t.isImportant && !t.isDone).toList(), context),
-                      _buildTaskList(allTasks.where((t) => t.isDone).toList(), context),
+                      _buildTaskList(filteredTasks, context),
+                      _buildTaskList(filteredTasks.where((t) => t.isImportant && !t.isDone).toList(), context),
+                      _buildTaskList(filteredTasks.where((t) => t.isDone).toList(), context),
                       _buildTaskList(
-                        allTasks.where((t) {
+                        filteredTasks.where((t) {
                           final taskDate = DateTime(t.dueDate.year, t.dueDate.month, t.dueDate.day);
                           return !t.isDone && taskDate.isBefore(today);
                         }).toList(),
@@ -144,7 +185,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
   Widget _buildTaskList(List<Task> tasks, BuildContext context) {
     if (tasks.isEmpty) {
-      return _buildEmptyState('Lista vazia.');
+      return _buildEmptyState(_searchQuery.isEmpty ? 'Lista vazia.' : 'Nenhum resultado encontrado.');
     }
 
     return ListView.builder(
